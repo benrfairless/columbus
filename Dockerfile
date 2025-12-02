@@ -3,7 +3,8 @@
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm install
+# Use --legacy-peer-deps and increase timeout for npm install
+RUN npm install --legacy-peer-deps --fetch-timeout=60000 || npm install --legacy-peer-deps --fetch-timeout=120000
 COPY frontend/ ./
 RUN npx tailwindcss -i input.css -o style.css --minify
 
@@ -11,8 +12,9 @@ RUN npx tailwindcss -i input.css -o style.css --minify
 FROM golang:1.19-alpine AS go-builder
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache git gcc musl-dev
+# Install build dependencies with retries
+RUN apk add --no-cache git gcc musl-dev || \
+    (sleep 5 && apk add --no-cache git gcc musl-dev)
 
 # Copy go mod files
 COPY go.mod go.sum ./
@@ -51,7 +53,8 @@ RUN CGO_ENABLED=1 GOOS=linux go build \
 
 # Server final stage
 FROM alpine:latest AS server
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk --no-cache add ca-certificates tzdata || \
+    (sleep 5 && apk --no-cache add ca-certificates tzdata)
 WORKDIR /app
 COPY --from=go-builder /app/columbus-server .
 COPY server/server.docker.conf /etc/columbus/server.conf
@@ -60,7 +63,8 @@ CMD ["./columbus-server", "-config", "/etc/columbus/server.conf"]
 
 # Scanner final stage
 FROM alpine:latest AS scanner
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk --no-cache add ca-certificates tzdata || \
+    (sleep 5 && apk --no-cache add ca-certificates tzdata)
 WORKDIR /app
 COPY --from=go-builder /app/columbus-scanner .
 COPY scanner/scanner.docker.conf /etc/columbus/scanner.conf
@@ -68,7 +72,8 @@ CMD ["./columbus-scanner", "-config", "/etc/columbus/scanner.conf"]
 
 # DNS final stage
 FROM alpine:latest AS dns
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk --no-cache add ca-certificates tzdata || \
+    (sleep 5 && apk --no-cache add ca-certificates tzdata)
 WORKDIR /app
 COPY --from=go-builder /app/columbus-dns .
 COPY dns/dns.docker.conf /etc/columbus/dns.conf

@@ -5,6 +5,24 @@ Columbus Project is an API first subdomain discovery service, blazingly fast sub
 ![Subdomain Lookup](https://columbus.elmasy.com/count_teslacom.gif)
 *Columbus returned 763 subdomains of tesla.com in less than a second.*
 
+## Quick Start with Docker
+
+The fastest way to get started with Columbus is using Docker:
+
+```bash
+# Clone the repository
+git clone https://github.com/elmasy-com/columbus
+cd columbus
+
+# Start all services with Docker Compose
+docker-compose up -d
+
+# Access the API
+curl 'http://localhost:8080/api/lookup/github.com'
+```
+
+For detailed Docker setup and configuration, see [DOCKER.md](DOCKER.md).
+
 ## Usage
 
 By default Columbus returns only the subdomains in a JSON string array:
@@ -39,6 +57,16 @@ done
 See more statistics on the [website](https://columbus.elmasy.com/stat).
 
 ## Server
+
+### Quick Start with Docker
+
+For the easiest setup, use Docker Compose (see [DOCKER.md](DOCKER.md)):
+
+```bash
+docker-compose up -d
+```
+
+The server will be available at http://localhost:8080
 
 ### Usage
 

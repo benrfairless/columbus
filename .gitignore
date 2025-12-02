@@ -4,3 +4,6 @@
 /frontend/templates/stylecss.tmpl
 /frontend/node_modules
 /tools
+
+# Docker environment file (use .env.example as template)
+.env
