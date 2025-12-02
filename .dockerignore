@@ -1,0 +1,34 @@
+# Git files
+.git
+.gitignore
+.github
+
+# Documentation
+*.md
+CODE_OF_CONDUCT.md
+LICENSE
+
+# Build artifacts
+release/
+internal/
+node_modules/
+frontend/node_modules/
+frontend/style.css
+
+# VHS (demo files)
+vhs/
+
+# Editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log

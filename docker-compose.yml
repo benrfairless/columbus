@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: columbus-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-changeme}
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - columbus-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: server
+    container_name: columbus-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - columbus-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  scanner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: scanner
+    container_name: columbus-scanner
+    restart: unless-stopped
+    networks:
+      - columbus-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  dns:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dns
+    container_name: columbus-dns
+    restart: unless-stopped
+    ports:
+      - "1053:1053/udp"
+      - "1053:1053/tcp"
+    networks:
+      - columbus-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+networks:
+  columbus-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
